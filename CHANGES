@@ -1,6 +1,15 @@
-CHANGES for man2html: 97/08/12 13:18:14
+CHANGES for man2html: 2001-07-28 20:22:29
 
 MM/DD/YYYY
+===========================================================================
+2001-07-28
+
+	o  keep the version number the same.
+
+	o  add a fix to detect if the text used for an HREF was hyphenated, and
+	   add the missing chunk.
+
+
 ===========================================================================
 08/12/1997	(3.0.1)
 

@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
@@ -139,7 +139,7 @@ sub do_it {
 
     $doitcode =<<'EndOfDoItCode';
 
-    my($line, $tmp, $i, $head, $preindent, $see_also, $do);
+    my($line, $tmp, $i, $head, $preindent, $see_also, $do, $newc);
 
     $see_also = !$SeeAlso;
     print $OutFH "<!-- Manpage converted by man2html $VERSION -->\n";
@@ -173,7 +173,8 @@ sub do_it {
 
 	    ## Interpret line
 	    $line = $_;
-	    entitize(\$_);		# Convert [$<>] to entity references
+	    $oldc = $newc;
+	    $newc = entitize(\$_);	# Convert [$<>] to entity references
 
 	    ## Check for 'SEE ALSO' link only
 	    if (!$see_also && $CgiUrl && $SeeAlso) {
@@ -376,6 +377,21 @@ sub entitize {
     $$txt =~ s/([^\010]\&[^\010])/htmlize2($1)/geo;
     $$txt =~ s/([^\010]<[^\010])/htmlize2($1)/geo;
     $$txt =~ s/([^\010]>[^\010])/htmlize2($1)/geo;
+
+    # Check for a chunk which looks like the dangling part of a hyphenated
+    # and overstruck word, save that into $newc, so we can append it in an
+    # HREF at the beginning of the next line.
+    $newc = "";
+    my($x) = $$txt;
+    chop $x;
+    $x =~ s/^[ ]+([^ ]+[ ]+)+//;
+    my($y) = $x;
+    $y =~ s/.\010//g;
+    if ( ( $y =~ /^\w+-$/ ) && ( length($y) * 3 <= length($x) ) ) {
+       $newc = $y;
+       chop $newc;
+    }
+    $newc;
 }
 
 ##---------------------------------------------------------------------------
@@ -438,15 +454,17 @@ sub strike {
 ##
 sub make_xref {
     my $str = shift;
+    my $fix = $oldc;
     $str =~ s/.\010//go;			# Remove overstriking
 
+    $oldc = "";
     if ($CgiUrl) {
 	my($title,$section,$subsection) =
 	    ($str =~ /([\+_\.\w-]+)\((\d)(\w?)\)/);
 
 	$title =~ s/\+/%2B/g;
 	my($href) = (eval $CgiUrl);
-	qq|<B><A HREF="$href">$str</A></B>|;
+	qq|<B><A HREF="$fix$href">$str</A></B>|;
     } else {
 	qq|<B>$str</B>|;
     }
