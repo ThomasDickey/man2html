@@ -1,6 +1,31 @@
-CHANGES for man2html: 2001-07-28 20:22:29
+CHANGES for man2html: 2013-12-21 17:01:55
 
 MM/DD/YYYY
+===========================================================================
+2013-12-21
+
+	o  sign my work.
+
+	o  for consistency, warn as I did for -externs
+
+	o  add "-aliases" option for ncurses
+
+	o  add "-externs" option for ncurses
+
+	o  stylistic - tell the number of params, for prototype
+
+	o  spelling fixes
+
+	o  isolated cause for uninitialized $fix variable which would be
+	   reported by "use diagnostics" or "use warnings" - ncurses output
+	   unchanged.
+
+	o  indented (with perltidy)
+
+	o  fix most of the warnings which come up with "use strict".  However,
+	   turning on "use strict" will break ncurses' manhtml usage.
+
+
 ===========================================================================
 2001-07-28
 
