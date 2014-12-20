@@ -1,6 +1,14 @@
-CHANGES for man2html: 2013-12-21 17:01:55
+CHANGES for man2html: 2014-12-20 14:38:12
 
 MM/DD/YYYY
+===========================================================================
+2014-12-20 
+
+	o  Hood's old website is long gone; the replacement on Savannah had no
+	   updates (other than his change to use cvs).  Update the url to point
+	   to my site, which is the version I use for ncurses.
+
+
 ===========================================================================
 2013-12-21
 
