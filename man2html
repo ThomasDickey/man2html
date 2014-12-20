@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##	$Id: man2html,v 1.12 2013/12/21 22:01:55 tom Exp $
+##	$Id: man2html,v 1.13 2014/12/20 19:38:12 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##	Thomas E. Dickey (for ncurses and other programs)
@@ -376,10 +376,7 @@ sub printhead() {
 sub printtail() {
     print $OutFH <<EndOfRef;
 <HR>
-<ADDRESS>
-Man(1) output converted with
-<a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>
-</ADDRESS>
+Man(1) output converted with <a href="http://invisible-island.net/scripts/readme.html#others_scripts">man2html</a>
 </BODY>
 </HTML>
 EndOfRef
