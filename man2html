@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##	$Id: man2html,v 1.13 2014/12/20 19:38:12 tom Exp $
+##	$Id: man2html,v 1.14 2015/02/13 01:52:28 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##	Thomas E. Dickey (for ncurses and other programs)
@@ -216,7 +216,7 @@ sub do_it() {
 	    $secth = 0;
 	    ## Check for strong text and headings
 	    if ($Sun || /.\010./o) {
-		if (!$NoHeads) {
+		if (!$NoHeads and /^((.\010.)|[[:punct:][:space:]])+[\r\n]+$/o ) {
 		    $line =~ s/.\010//go;
 		    $tmp = $HeadFallback;
 EndOfDoItCode
@@ -244,6 +244,7 @@ EndOfDoItCode
 			s/(((.\010)+.)+)/strongize($1)/oge;
 		    }
 		} else {
+		    $line =~ s/.\010//go;
 		    s/(((.\010)+.)+)/strongize($1)/oge;
 		}
 	    }

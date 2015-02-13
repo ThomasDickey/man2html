@@ -1,6 +1,15 @@
-CHANGES for man2html: 2014-12-20 14:38:12
+CHANGES for man2html: 2015-02-12 20:52:28
 
 MM/DD/YYYY
+===========================================================================
+2015-02-12 
+
+	o  fix special case seen in ctlseqs.ms where a partially bold line
+	   would be treated as a header.  The fix ensures that any
+	   non-punctuation/non-space character on the line is bold - the normal
+	   behavior for nroff.
+
+
 ===========================================================================
 2014-12-20 
 
