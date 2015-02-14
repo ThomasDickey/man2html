@@ -1,6 +1,23 @@
-CHANGES for man2html: 2015-02-12 20:52:28
+CHANGES for man2html: 2015-02-13 21:09:52
 
 MM/DD/YYYY
+===========================================================================
+2015-02-13 
+
+	o  add "-index" option, to move some functionality out of
+	   "fixup-man2html"
+
+	o  move the advert into the meta tag for "generator" as done with tidy. 
+	   (verified that reformatting with tidy will not remove this tag)
+
+	o  modify heuristic for section-titles to allow it to match subsection
+	   titles (which differ only by their indent/margin value).
+
+	o  bump version
+
+	o  improve the fix to ensure there is no extra leading/trailing
+	   whitespace
+
 ===========================================================================
 2015-02-12 
 

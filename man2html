@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##	$Id: man2html,v 1.14 2015/02/13 01:52:28 tom Exp $
+##	$Id: man2html,v 1.19 2015/02/14 02:09:52 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##	Thomas E. Dickey (for ncurses and other programs)
@@ -20,6 +20,7 @@
 ##	---------------------------------------------------------------------
 ##
 ##---------------------------------------------------------------------------##
+##  Copyright 2001-2014,2015	Thomas E. Dickey
 ##  Copyright (C) 1995-1997	Earl Hood, ehood@medusa.acs.uci.edu
 ##
 ##  This program is free software; you can redistribute it and/or modify
@@ -51,7 +52,7 @@ use Getopt::Long;
 
 our $PROG = $0;
 $PROG =~ s/.*\///;
-our $VERSION = "3.0.1";
+our $VERSION = "3.1";
 
 ## Input and output filehandles
 our $InFH  = \*STDIN;
@@ -101,8 +102,9 @@ our %SectionHead = (
 
 ## Fallback tag if above is not found
 our $HeadFallback = '<H2>';
+our $SSecFallback = '<H3>';
 
-## Other gobals
+## Other globals
 
 our %Aliases;    # link to a different manpage, mapping from key to value
 our %Externs;    # suppress HREF if key corresponding to manpage exists
@@ -118,32 +120,54 @@ our $Solaris  = 0;      # Solaris keyword search processing flag
 our $Sun      = 0;      # Headers not overstruck flag
 our $Title    = '';     # Title
 our $UTag     = 'I';    # Underline tag
-our $ftsz     = 7;      # Bottome margin size
+our $ftsz     = 7;      # Bottom margin size
 our $hdsz     = 7;      # Top margin size
 our $leftm    = '';     # Left margin pad
 our $leftmsz  = 0;      # Left margin size
+our $ssecm    = '';     # subsection pad
+our $ssecmsz  = 3;      # subsection size
 our $pgsz     = 66;     # Size of page size
 our $txsz     = 52;     # Text body length size
 our $oldc     = "";
+our $sec_sz;
+our @index;
 
 ## Options
 
 our (
-    $opt_aliases,  $opt_bare,      $opt_belem,    $opt_botm,
-    $opt_cgiurl,   $opt_cgiurlexp, $opt_compress, $opt_externs,
-    $opt_headmap,  $opt_help,      $opt_k,        $opt_leftm,
-    $opt_nodepage, $opt_noheads,   $opt_pgsize,   $opt_seealso,
-    $opt_solaris,  $opt_sun,       $opt_title,    $opt_topm,
-    $opt_uelem
+    $opt_aliases, $opt_bare,      $opt_belem,    $opt_botm,
+    $opt_cgiurl,  $opt_cgiurlexp, $opt_compress, $opt_externs,
+    $opt_headmap, $opt_help,      $opt_index,    $opt_k,
+    $opt_leftm,   $opt_nodepage,  $opt_noheads,  $opt_pgsize,
+    $opt_seealso, $opt_ssecm,     $opt_solaris,  $opt_sun,
+    $opt_title,   $opt_topm,      $opt_uelem
 );
 
 #############################################################################
 ##	Subroutines
 #############################################################################
 
+sub index_name($) {
+    my $value = shift;
+    if ($opt_index) {
+        my $name = $value;
+        $name =~ s/<H\d>//;
+        $name =~ s/<\/H\d>//;
+        $name =~ s/ /-/g;
+        $name =~ s/[^[:alnum:]-]/_/g;
+        my $head = lc $value;
+        $head =~ s/^<//;
+        $head =~ s/>.*//;
+        $name = "$head-$name";
+        $value =~ s/<\/H/<\/a><\/H/;
+        $value =~ s/>/><a name="$name">/;
+    }
+    return $value;
+}
+
 sub do_it() {
 
-    ##	Define while loop and then eval it when used.  The reason
+    ##	Define while loop and then evaluate it when used.  The reason
     ##	is to avoid the regular expression reevaluation in the
     ##	section head detection code.
 
@@ -153,7 +177,6 @@ sub do_it() {
 
     $see_also = !$SeeAlso;
     $newc = "";
-    print $OutFH "<!-- Manpage converted by man2html $VERSION -->\n";
     LOOP: while(!eof($InFH)) {
 	$blank = 0;
 	for ($i=0; $i < $hdsz; $i++) {
@@ -216,9 +239,19 @@ sub do_it() {
 	    $secth = 0;
 	    ## Check for strong text and headings
 	    if ($Sun || /.\010./o) {
-		if (!$NoHeads and /^((.\010.)|[[:punct:][:space:]])+[\r\n]+$/o ) {
+		if (!$NoHeads and
+		    /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})
+		      ((.\010.)|[[:punct:]])
+		      ((.\010.)|[[:punct:][:space:]])+
+		      ((.\010.)|[[:punct:]])
+		      [\r\n]+$/ox ) {
 		    $line =~ s/.\010//go;
-		    $tmp = $HeadFallback;
+		    $secth = 1;
+		    if ( $ssecm ne "" and /^$leftm$ssecm.*$/ ) {
+		        $tmp = $SSecFallback;
+		    } else {
+		        $tmp = $HeadFallback;
+		    }
 EndOfDoItCode
 
     ##  Create switch statement for detecting a heading
@@ -235,10 +268,15 @@ EndOfDoItCode
     ##  Rest of routine
     ##
     $doitcode .= <<'EndOfDoItCode';
-		    if ($secth || $line =~ /^$leftm\S/o) {
+		    if ($secth) {
 			chop $line;
+			$line =~ s/^\s+//;
 			$_ = $tmp . $line . $tmp;
 			s%<([^>]*)>$%</$1>%;
+			if ( $opt_index ) {
+			    $_ = &index_name($_);
+			    $index[$#index + 1] = $_;
+			}
 			$_ = "\n</PRE>\n" . $_ . "<PRE>\n";
 		    } else {
 			s/(((.\010)+.)+)/strongize($1)/oge;
@@ -280,6 +318,7 @@ sub get_cli_opts() {
         "compress",       # Compress consecutive blank lines
         "externs=s",      # Filename of names to not link to
         "headmap=s",      # Filename of user section head map file
+        "index",          # Make an index
         "k",              # Process input from 'man -k' output.
         "leftm=i",        # Character width of left margin (def: 0)
         "nodepage",       # Do not remove pagination lines
@@ -287,6 +326,7 @@ sub get_cli_opts() {
         "pgsize=i",       # Number of lines in a page (def: 66)
         "seealso",        # Link to other manpages only in the SEE ALSO section
         "solaris",        # Parse 'man -k' output from a solaris system
+        "ssecm=i",        # Character width of subsection margin (def: 3)
         "sun",            # Section heads are not overstruck in input
         "title=s",        # Title of manpage (def: Not defined)
         "topm=i",         # Number of lines for top margin (def: 7)
@@ -307,7 +347,10 @@ sub get_cli_opts() {
     }
     $txsz = $pgsz - ( $hdsz + $ftsz );
     $leftmsz = $opt_leftm if defined($opt_leftm);
-    $leftm = ' ' x $leftmsz;
+    $leftm   = ' ' x $leftmsz;
+    $ssecmsz = $opt_ssecm if defined($opt_ssecm);
+    $ssecm   = ' ' x $ssecmsz;
+    $sec_sz  = $leftmsz + $ssecmsz;
 
     $Bare     = defined($opt_bare);
     $Compress = defined($opt_compress);
@@ -367,17 +410,51 @@ sub get_cli_opts() {
 
 ##---------------------------------------------------------------------------
 sub printhead() {
+    print $OutFH "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\">\n";
     print $OutFH "<HTML>\n";
-    print $OutFH "<HEAD>\n", "<TITLE>$Title</TITLE>\n", "</HEAD>\n" if $Title;
+    print $OutFH "<HEAD>\n";
+    print $OutFH "<meta ", "http-equiv=\"Content-Type\" ",
+      "content=\"text/html; charset=us-ascii\">\n";
+    print $OutFH "<meta ", "name=\"generator\" ",
+      "content=\"Manpage converted by man2html ",
+      "- see ", "http://invisible-island.net",
+      "/scripts/readme.html#others_scripts\">\n";
+    print $OutFH "<TITLE>$Title</TITLE>\n" if $Title;
+    print $OutFH "</HEAD>\n";
     print $OutFH "<BODY>\n";
     print $OutFH "<H1>$Title</H1>\n", "<HR>\n" if $Title;
 }
 
 ##---------------------------------------------------------------------------
 sub printtail() {
+    if ( $opt_index and ( $#index >= 0 ) ) {
+        print $OutFH "<div class=\"nav\">\n";
+        my $level = 2;
+        print $OutFH "<ul>\n";
+        for my $n ( 0 .. $#index ) {
+            my $item  = $index[$n];
+            my $value = $item;
+            $value =~ s/^.*(\d)>$/$1/;
+            if ( $level < $value ) {
+                $item =~ s/<\/H\d>//;
+            }
+            $item =~ s/H\d>/li>/g;
+            $item =~ s/name="/href="#/;
+            printf $OutFH "%s\n", $item;
+            if ( $level < $value ) {
+                print $OutFH "<ul>\n";
+                $level = $value;
+            }
+            elsif ( $level > $value ) {
+                print $OutFH "</ul>\n";
+                $level = $value;
+                print $OutFH "</li>\n";
+            }
+        }
+        print $OutFH "</ul>\n";
+        print $OutFH "</div>\n";
+    }
     print $OutFH <<EndOfRef;
-<HR>
-Man(1) output converted with <a href="http://invisible-island.net/scripts/readme.html#others_scripts">man2html</a>
 </BODY>
 </HTML>
 EndOfRef
@@ -498,7 +575,7 @@ sub strike($$) {
 }
 
 ##---------------------------------------------------------------------------
-##	make_xref() converts a manpage crossreference into a hyperlink.
+##	make_xref() converts a manpage cross-reference into a hyperlink.
 ##
 sub make_xref($) {
     my $str = shift;
@@ -675,6 +752,7 @@ Options:
   -externs <file>  : Filename containing names to not link to
   -headmap <file>  : Filename of user section head map file
   -help            : This message
+  -index           : Make an index of headers at the end
   -k               : Process a keyword search result
   -leftm <#>       : Character width of left margin (def: 0)
   -nodepage        : Do not remove pagination lines
@@ -682,6 +760,7 @@ Options:
   -pgsize <#>      : Number of lines in a page (def: 66)
   -seealso         : Link to other manpages only in the SEE ALSO section
   -solaris         : Process keyword search result in Solaris format
+  -ssecm <#>       : Character width of subsection margin (def: 0)
   -sun             : Section heads are not overstruck in input
   -title <string>  : Title of manpage (def: Not defined)
   -topm <#>        : Number of lines for top margin (def: 7)
@@ -694,6 +773,7 @@ Description:
 
 Version:
   $VERSION
+  Copyright 2001-2014,2015 Thomas E. Dickey
   Copyright (C) 1995-1997  Earl Hood, ehood\@medusa.acs.uci.edu
   $PROG comes with ABSOLUTELY NO WARRANTY and $PROG may be copied only
   under the terms of the GNU General Public License, which may be found in
