@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##	$Id: man2html,v 1.19 2015/02/14 02:09:52 tom Exp $
+##	$Id: man2html,v 1.21 2015/02/14 22:08:35 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##	Thomas E. Dickey (for ncurses and other programs)
@@ -426,28 +426,35 @@ sub printhead() {
 }
 
 ##---------------------------------------------------------------------------
+sub index_level($) {
+    my $value = shift;
+    $value =~ s/^.*(\d)>$/$1/;
+    return $value;
+}
+
 sub printtail() {
     if ( $opt_index and ( $#index >= 0 ) ) {
         print $OutFH "<div class=\"nav\">\n";
         my $level = 2;
         print $OutFH "<ul>\n";
         for my $n ( 0 .. $#index ) {
-            my $item  = $index[$n];
-            my $value = $item;
-            $value =~ s/^.*(\d)>$/$1/;
-            if ( $level < $value ) {
+            my $item = $index[$n];
+            my $this = &index_level($item);
+            my $next =
+              ( $n < $#index ) ? &index_level( $index[ $n + 1 ] ) : $level;
+            if ( $level < $next ) {
                 $item =~ s/<\/H\d>//;
             }
             $item =~ s/H\d>/li>/g;
             $item =~ s/name="/href="#/;
             printf $OutFH "%s\n", $item;
-            if ( $level < $value ) {
+            if ( $level < $next ) {
                 print $OutFH "<ul>\n";
-                $level = $value;
+                $level = $next;
             }
-            elsif ( $level > $value ) {
+            elsif ( $level > $next ) {
                 print $OutFH "</ul>\n";
-                $level = $value;
+                $level = $next;
                 print $OutFH "</li>\n";
             }
         }
