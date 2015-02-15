@@ -1,6 +1,13 @@
-CHANGES for man2html: 2015-02-14 17:08:35
+CHANGES for man2html: 2015-02-15 07:18:19
 
 MM/DD/YYYY
+===========================================================================
+2015-02-15 
+
+	o  make -title less obnoxious by using css "no-header" and omitting the
+	   following hr-tag from the h1-tag.
+
+
 ===========================================================================
 2015-02-14 
 
