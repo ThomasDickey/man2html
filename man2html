@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##	$Id: man2html,v 1.22 2015/02/15 12:18:19 tom Exp $
+##	$Id: man2html,v 1.23 2015/07/08 09:25:09 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##	Thomas E. Dickey (for ncurses and other programs)
@@ -118,6 +118,7 @@ our $NoHeads  = 0;      # Do no header detection flag
 our $SeeAlso  = 0;      # Do only SEE ALSO xrefs flag
 our $Solaris  = 0;      # Solaris keyword search processing flag
 our $Sun      = 0;      # Headers not overstruck flag
+our $Toc      = 0;      # IDs not in HTML::Toc format
 our $Title    = '';     # Title
 our $UTag     = 'I';    # Underline tag
 our $ftsz     = 7;      # Bottom margin size
@@ -140,7 +141,7 @@ our (
     $opt_headmap, $opt_help,      $opt_index,    $opt_k,
     $opt_leftm,   $opt_nodepage,  $opt_noheads,  $opt_pgsize,
     $opt_seealso, $opt_ssecm,     $opt_solaris,  $opt_sun,
-    $opt_title,   $opt_topm,      $opt_uelem
+    $opt_title,   $opt_toc,       $opt_topm,     $opt_uelem
 );
 
 #############################################################################
@@ -160,6 +161,7 @@ sub index_name($) {
         $head =~ s/>.*//;
         $name = "$head-$name";
         $value =~ s/<\/H/<\/a><\/H/;
+        $value =~ s/(<H\d)/$1 id="$name-toc"/ if $Toc;
         $value =~ s/>/><a name="$name">/;
     }
     return $value;
@@ -329,6 +331,7 @@ sub get_cli_opts() {
         "ssecm=i",        # Character width of subsection margin (def: 3)
         "sun",            # Section heads are not overstruck in input
         "title=s",        # Title of manpage (def: Not defined)
+        "toc",            # Generate IDs compatible with HTML::Toc
         "topm=i",         # Number of lines for top margin (def: 7)
         "uelem=s",        # HTML Element for underlined text (def: "I")
 
@@ -360,6 +363,7 @@ sub get_cli_opts() {
     $SeeAlso  = defined($opt_seealso);
     $Solaris  = defined($opt_solaris);
     $Sun      = defined($opt_sun);
+    $Toc      = defined($opt_toc);
 
     $Title = $opt_title || $Title;
     $CgiUrl = $opt_cgiurlexp
@@ -422,7 +426,9 @@ sub printhead() {
     print $OutFH "<TITLE>$Title</TITLE>\n" if $Title;
     print $OutFH "</HEAD>\n";
     print $OutFH "<BODY>\n";
-    print $OutFH "<H1 class=\"no-header\">$Title</H1>\n" if $Title;
+    my $id = "";
+    $id = " id=\"toplevel-toc\"" if $Toc;
+    print $OutFH "<H1$id class=\"no-header\">$Title</H1>\n" if $Title;
 }
 
 ##---------------------------------------------------------------------------
@@ -445,8 +451,16 @@ sub printtail() {
             if ( $level < $next ) {
                 $item =~ s/<\/H\d>//;
             }
-            $item =~ s/H\d>/li>/g;
-            $item =~ s/name="/href="#/;
+            if ($Toc) {
+                $item =~ s/H\d id=[^>]+>/li>/g;
+                $item =~ s/">/-toc">/;
+                $item =~ s/name="/href="#/;
+                $item =~ s/H\d>/li>/g;
+            }
+            else {
+                $item =~ s/H\d>/li>/g;
+                $item =~ s/name="/href="#/;
+            }
             printf $OutFH "%s\n", $item;
             if ( $level < $next ) {
                 print $OutFH "<ul>\n";
@@ -770,6 +784,7 @@ Options:
   -ssecm <#>       : Character width of subsection margin (def: 0)
   -sun             : Section heads are not overstruck in input
   -title <string>  : Title of manpage (def: Not defined)
+  -toc             : Generate IDs compatible with HTML::Toc
   -topm <#>        : Number of lines for top margin (def: 7)
   -uelem <elem>    : HTML Element for underlined text (def: "I")
 
