@@ -1,6 +1,13 @@
-CHANGES for man2html: 2015-07-08 05:25:09
+CHANGES for man2html: 2016-01-30 14:09:44
 
 MM/DD/YYYY
+===========================================================================
+2016-01-30 
+
+	o  if "-compress", suppress extra newline at the end of PRE-sections
+	   which added to whitespace on resulting page.
+
+
 ===========================================================================
 2015-07-08 
 
