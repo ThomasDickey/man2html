@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##	$Id: man2html,v 1.24 2016/01/30 19:09:44 tom Exp $
+##	$Id: man2html,v 1.25 2017/01/07 20:46:06 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##	Thomas E. Dickey (for ncurses and other programs)
@@ -606,12 +606,13 @@ sub make_xref($) {
 
     $oldc = "";
     if ( $CgiUrl and ( not defined $Externs{$str} ) ) {
+        my $actual = $str;
         if ( defined $Aliases{$str} ) {
             warn qq!Mapping alias "$str" to "$Aliases{$str}"\n!;
-            $str = $Aliases{$str};
+            $actual = $Aliases{$str};
         }
         my ( $title, $section, $subsection ) =
-          ( $str =~ /([\+_\.\w-]+)\((\d)(\w?)\)/ );
+          ( $actual =~ /([\+_\.\w-]+)\((\d)(\w?)\)/ );
 
         $title =~ s/\+/%2B/g;
         my ($href) = ( eval $CgiUrl );
