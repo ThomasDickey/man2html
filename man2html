@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##	$Id: man2html,v 1.25 2017/01/07 20:46:06 tom Exp $
+##	$Id: man2html,v 1.26 2018/01/01 13:12:47 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##	Thomas E. Dickey (for ncurses and other programs)
@@ -422,7 +422,7 @@ sub printhead() {
       "content=\"text/html; charset=us-ascii\">\n";
     print $OutFH "<meta ", "name=\"generator\" ",
       "content=\"Manpage converted by man2html ",
-      "- see ", "http://invisible-island.net",
+      "- see ", "https://invisible-island.net",
       "/scripts/readme.html#others_scripts\">\n";
     print $OutFH "<TITLE>$Title</TITLE>\n" if $Title;
     print $OutFH "</HEAD>\n";
