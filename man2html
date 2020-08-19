@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##	$Id: man2html,v 1.26 2018/01/01 13:12:47 tom Exp $
+##	$Id: man2html,v 1.27 2020/08/19 23:39:32 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##	Thomas E. Dickey (for ncurses and other programs)
@@ -241,11 +241,14 @@ sub do_it() {
 	    $secth = 0;
 	    ## Check for strong text and headings
 	    if ($Sun || /.\010./o) {
+		my $foo = $line;
+		$foo =~ s/.\010//go;
 		if (!$NoHeads and
 		    /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})
-		      ((.\010.)|[[:punct:]])
-		      ((.\010.)|[[:punct:][:space:]])+
-		      ((.\010.)|[[:punct:]])
+		      ((((.\010.)|[[:punct:]])
+		        ((.\010.)|[[:punct:][:space:]])+
+		        ((.\010.)|[[:punct:]]))|
+		       ((.\010.){2,}))
 		      [\r\n]+$/ox ) {
 		    $line =~ s/.\010//go;
 		    $secth = 1;
@@ -383,7 +386,7 @@ sub get_cli_opts() {
                 next if ( $data[$n] =~ /^\s*#/ );
                 my $key   = $data[$n];
                 my $value = $key;
-                $key   =~ s/\s.*//;
+                $key =~ s/\s.*//;
                 $value =~ s/^[^[:blank:]]+\s+//;
                 $Aliases{$key} = $value;
             }

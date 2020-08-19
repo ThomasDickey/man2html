@@ -1,6 +1,13 @@
-CHANGES for man2html: 2018-01-01 08:12:47
+CHANGES for man2html: 2020-08-19 19:39:32
 
 MM/DD/YYYY
+===========================================================================
+2020-08-19 
+
+	o  provide for a special case of subsections used in mawk-code.7, where
+	   some are only two-characters.
+
+
 ===========================================================================
 2018-01-01 
 
