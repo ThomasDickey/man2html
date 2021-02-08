@@ -1,6 +1,13 @@
-CHANGES for man2html: 2020-08-19 19:39:32
+CHANGES for man2html: 2021-02-08 16:24:11
 
 MM/DD/YYYY
+===========================================================================
+2021-02-08 
+
+	o  trim unwanted quotes from -title parameter which came from
+	   shellcheck fixes
+
+
 ===========================================================================
 2020-08-19 
 
