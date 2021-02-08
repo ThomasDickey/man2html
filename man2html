@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##	$Id: man2html,v 1.27 2020/08/19 23:39:32 tom Exp $
+##	$Id: man2html,v 1.28 2021/02/08 21:24:11 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##	Thomas E. Dickey (for ncurses and other programs)
@@ -20,7 +20,7 @@
 ##	---------------------------------------------------------------------
 ##
 ##---------------------------------------------------------------------------##
-##  Copyright 2001-2015,2016	Thomas E. Dickey
+##  Copyright 2001-2020,2021	Thomas E. Dickey
 ##  Copyright (C) 1995-1997	Earl Hood, ehood@medusa.acs.uci.edu
 ##
 ##  This program is free software; you can redistribute it and/or modify
@@ -370,6 +370,7 @@ sub get_cli_opts() {
     $Toc      = defined($opt_toc);
 
     $Title = $opt_title || $Title;
+    $Title =~ s/^"([^"]*)"$/$1/;
     $CgiUrl = $opt_cgiurlexp
       || ( $opt_cgiurl ? qq{return "$opt_cgiurl"} : '' );
 
