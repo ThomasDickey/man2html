@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##	$Id: man2html,v 1.28 2021/02/08 21:24:11 tom Exp $
+##	$Id: man2html,v 1.29 2022/07/09 23:46:36 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##	Thomas E. Dickey (for ncurses and other programs)
@@ -221,7 +221,7 @@ sub do_it() {
 
 	    ## Create anchor links for manpage references
 	    s/((((.\010)+)?[\+_\.\w-])+\(((.\010)+)?
-	      \d((.\010)+)?\w?\))
+	      \d((.\010)+)?\w*\))
 	     /make_xref($1)
 	     /geox  if $see_also;
 
@@ -616,7 +616,8 @@ sub make_xref($) {
             $actual = $Aliases{$str};
         }
         my ( $title, $section, $subsection ) =
-          ( $actual =~ /([\+_\.\w-]+)\((\d)(\w?)\)/ );
+          ( $actual =~ /([\+_\.\w-]+)\((\d)(\w*)\)/ );
+        ($subsection) = lc($subsection);
 
         $title =~ s/\+/%2B/g;
         my ($href) = ( eval $CgiUrl );
@@ -652,7 +653,7 @@ sub man_k() {
     while ( $line = <$InFH> ) {
         next if $line !~ /\(\d\w?\)\s+-\s/;    # check if line can be handled
         ( $refs, $section, $subsection, $desc ) =
-          $line =~ /^\s*(.*)\((\d)(\w?)\)\s*-\s*(.*)$/;
+          $line =~ /^\s*(.*)\((\d)(\w*)\)\s*-\s*(.*)$/;
 
         if ($Solaris) {
             $refs =~ s/^\s*([\+_\.\w-]+)\s+([\+_\.\w-]+)\s*$/$1/;
