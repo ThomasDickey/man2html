@@ -1,6 +1,15 @@
-CHANGES for man2html: 2022-07-09 19:46:36
+CHANGES for man2html: 2022-07-12 17:21:10
 
 MM/DD/YYYY
+===========================================================================
+2022-07-12
+
+	o  amend the hyphenation fix to account for href's pointing to a
+	   subdirectory.  improve handling of hyphenated link by adding an
+	   option "-leftside" for the left-sides from hyphenated manpage names
+	   (with a short fallback for "apt", "cvs", "git", "sccs' and "sysv").
+
+
 ===========================================================================
 2022-07-09
 
