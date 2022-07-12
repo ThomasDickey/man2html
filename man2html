@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##	$Id: man2html,v 1.29 2022/07/09 23:46:36 tom Exp $
+##	$Id: man2html,v 1.30 2022/07/12 21:21:10 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##	Thomas E. Dickey (for ncurses and other programs)
@@ -20,7 +20,7 @@
 ##	---------------------------------------------------------------------
 ##
 ##---------------------------------------------------------------------------##
-##  Copyright 2001-2020,2021	Thomas E. Dickey
+##  Copyright 2001-2021,2022	Thomas E. Dickey
 ##  Copyright (C) 1995-1997	Earl Hood, ehood@medusa.acs.uci.edu
 ##
 ##  This program is free software; you can redistribute it and/or modify
@@ -106,8 +106,9 @@ our $SSecFallback = '<H3>';
 
 ## Other globals
 
-our %Aliases;    # link to a different manpage, mapping from key to value
-our %Externs;    # suppress HREF if key corresponding to manpage exists
+our %Aliases;      # link to a different manpage, mapping from key to value
+our %Externs;      # suppress HREF if key corresponding to manpage exists
+our %LeftSides;    # parts of a manpage name on the left-side of a hyphen
 our $Bare     = 0;      # Skip printing HTML head/foot flag
 our $BTag     = 'B';    # Overstrike tag
 our $CgiUrl   = '';     # CGI URL expression
@@ -327,6 +328,7 @@ sub get_cli_opts() {
         "index",          # Make an index
         "k",              # Process input from 'man -k' output.
         "leftm=i",        # Character width of left margin (def: 0)
+        "leftside=s",     # Filename of left-sides for hyphenated names
         "nodepage",       # Do not remove pagination lines
         "noheads",        # Do not detect for section heads
         "pgsize=i",       # Number of lines in a page (def: 66)
@@ -395,6 +397,29 @@ sub get_cli_opts() {
         else {
             warn "Unable to read $opt_externs\n";
         }
+    }
+
+    if ( defined($opt_leftside) ) {
+        if ( open FP, $opt_leftside ) {
+            my @data = <FP>;
+            for my $n ( 0 .. $#data ) {
+                chomp $data[$n];
+                next if ( $data[$n] =~ /^\s*#/ );
+                $LeftSides{ $data[$n] } = 1;
+            }
+        }
+        else {
+            warn "Unable to read $opt_leftside\n";
+        }
+    }
+    else {
+        %LeftSides = qw (
+          apt 1
+          cvs 1
+          git 1
+          sccs 1
+          sysv 1
+        );
     }
 
     if ( defined($opt_externs) ) {
@@ -533,7 +558,12 @@ sub entitize($) {
     $y =~ s/.\010//g;
     if ( ( $y =~ /^\w+-$/ ) && ( length($y) * 3 <= length($x) ) ) {
         $newc = $y;
-        chop $newc;
+        $y    = lc($y);
+        chop $y;
+
+        # chop off the "-", unless the term happens to match a (small!) set of
+        # special cases where the "-" forms part of the actual manpage name.
+        chop $newc unless ( defined $LeftSides{$y} );
     }
     $newc;
 }
@@ -621,7 +651,10 @@ sub make_xref($) {
 
         $title =~ s/\+/%2B/g;
         my ($href) = ( eval $CgiUrl );
-        qq|<B><A HREF="$fix$href">$str</A></B>|;
+        if ( $fix ne "" ) {
+            $href =~ s%^(.*/)?(.*)$%$1$fix$2%;
+        }
+        qq|<B><A HREF="$href">$str</A></B>|;
     }
     else {
         warn qq|Not linked: "$str"\n|;
@@ -783,6 +816,7 @@ Options:
   -index           : Make an index of headers at the end
   -k               : Process a keyword search result
   -leftm <#>       : Character width of left margin (def: 0)
+  -leftside <file> : Filename of left-sides for hyphenated names
   -nodepage        : Do not remove pagination lines
   -noheads         : Turn off section head detection
   -pgsize <#>      : Number of lines in a page (def: 66)
@@ -802,7 +836,7 @@ Description:
 
 Version:
   $VERSION
-  Copyright 2001-2014,2015 Thomas E. Dickey
+  Copyright 2001-2021,2022 Thomas E. Dickey
   Copyright (C) 1995-1997  Earl Hood, ehood\@medusa.acs.uci.edu
   $PROG comes with ABSOLUTELY NO WARRANTY and $PROG may be copied only
   under the terms of the GNU General Public License, which may be found in
