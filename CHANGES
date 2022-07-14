@@ -1,6 +1,20 @@
-CHANGES for man2html: 2022-07-12 17:21:10
+CHANGES for man2html: 2022-07-14 19:36:06
 
 MM/DD/YYYY
+===========================================================================
+2022-07-14
+
+	o  regenerate doc/man2html.html, doc/man2html.ps, doc/man2html.txt
+	   using makefile.
+
+	o  document all of the new options in doc/man2html.1
+
+	o  some cleanup of man2html.1, eliminating unused macros and adding
+	   macros to replace repetitive nroff commands.
+
+	o  add doc/makefile
+
+
 ===========================================================================
 2022-07-12
 

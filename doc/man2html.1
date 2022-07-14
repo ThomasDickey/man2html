@@ -1,17 +1,5 @@
-.\" sccsid = "@(#)  man2html.1  1.2  08/12/97"
+.\" $Id: man2html.1,v 1.4 2022/07/14 23:35:30 tom Exp $
 .\"
-.\" ================================================
-.\" ARGUMENT MACRO:		.Ar "arg" [B]
-.de Ar
-.ie \\$2B  \%\fB\\$1\fR
-.el              \%\fI\\$1\fR
-..
-.\" ================================================
-.\" BRACKETED ARGUMENT MACRO:	.Br "arg" [B]
-.de Br
-.ie \\$2B  \%[\|\fB\\$1\fR\|]
-.el              \%[\|\fI\\$1\fR\|]
-..
 .\" ================================================
 .\" OPTION FLAG MACRO		.Of -x [arg]
 .de Of
@@ -19,8 +7,8 @@
 .el .if \\n(.$==2  \%[\|\fB\\$1\fR\0\fI\fI\\$2\fR\|]
 ..
 .\" ================================================
-.\" SYNOPSIS START MACRO
-.de Ss				.Ss name
+.\" SYNOPSIS START MACRO	.Ss name
+.de Ss
 .na
 .nr aA \w\\$1\\0u
 .in +\\n(aAu
@@ -29,31 +17,44 @@
 \&\fB\\$1\fR\t\c
 ..
 .\" ================================================
-.\" SYNOPSIS END MACRO
-.de Se				.Se
+.\" SYNOPSIS END MACRO		.Se
+.de Se
 .ad
 .in
 ..
 .\" ================================================
+.de b2
+.ie n  .IP \(bu 2
+.el    .IP \(bu 2
+..
+.\" ================================================
+.ie \n(.g .ds `` \(lq
+.el       .ds `` ``
+.ie \n(.g .ds '' \(rq
+.el       .ds '' ''
 .\"
 .\"
-.TH MAN2HTML 1 "97/08/12"
+.TH MAN2HTML 1 "2022/07/14" invisible-island.net
 .SH NAME
 .na
 man2html \- convert UNIX nroff(1) manual pages to HTML format
 .SH SYNOPSIS
 .na
 .Ss man2html
+.Of -aliases file
 .Of -bare
 .Of -belem name
 .Of -botm lines
 .Of -cgiurl string
 .Of -cgiurlexp expr
 .Of -compress
+.Of -externs file
 .Of -headmap mapfile
 .Of -help
+.Of -index
 .Of -k
 .Of -leftm chars
+.Of -leftside file
 .Of -nodepage
 .Of -noheads
 .Of -pgsize lines
@@ -61,6 +62,7 @@ man2html \- convert UNIX nroff(1) manual pages to HTML format
 .Of -solaris
 .Of -sun
 .Of -title string
+.Of -toc
 .Of -topm lines
 .Of -uelem name
 .Se
@@ -91,12 +93,9 @@ and writes a \s-1HTML\s+1 document to standard output
 The formatted nroff output is surrounded with
 .B \s-1<PRE>\s+1
 tags with the following exceptions/additions:
-.RS 4n
-.LP
-.na
-'ti -2n
-'ta  2n
-\(bu	Section heads are wrapped in \s-1HTML\s+1
+.RS 2
+.b2
+Section heads are wrapped in \s-1HTML\s+1
 .I header
 tags.
 See the
@@ -106,23 +105,15 @@ The
 .B \%-noheads
 option can be used to disable this feature.
 .ad
-.LP
-.na
-'ti -2n
-'ta  2n
-\(bu	Bold words designated by a \%"<char><bs><char>"
-sequences are wrapped in
+.b2
+Bold words designated by a \%"<char><bs><char>" sequences are wrapped in
 .B \s-1<B>\s+1
 tags (or the element specified via the
 .B \%-belem
 option).
 .ad
-.LP
-.na
-'ti -2n
-'ta  2n
-\(bu	Underlined words designated by a \%"_<bs><char>"
-sequences are wrapped in
+.b2
+Underlined words designated by a \%"_<bs><char>" sequences are wrapped in
 .B \s-1<I>\s+1
 tags (or the element specified via the
 .B \%-uelem
@@ -131,6 +122,13 @@ option).
 .RE
 .SH OPTIONS
 .na
+.TP 0.5i
+.BI -aliases\0 file
+Gives man2html a list of manpage aliases,
+i.e., alternate names for manual pages.
+The file contains one alias per line,
+followed by the actual manual page name.
+Man2html will link the reference for the alias to the actual manual page.
 .TP 0.5i
 .B -bare
 This option will eliminate \s-1HTML\s+1
@@ -175,6 +173,9 @@ section below for additional information.
 .B -compress
 Compress consecutive blank lines into a single line.
 .TP 0.5i
+.BI -externs\0 file
+Tell man2html to not attempt to link to the manual pages listed in the file.
+.TP 0.5i
 .BI -headmap\0 mapfile
 The
 .I mapfile
@@ -186,6 +187,11 @@ section below for information on the format of the map file.
 .TP 0.5i
 .B -help
 Print out a short usage message and then exit immediately.
+.TP 0.5i
+.B -index
+Write an un-numbered list of headers at the end of the output \s-1HTML\s+1,
+which can be used as-is, or post-processed to make that list
+an \s-1HTML\s+1 \*(``nav\*('' area that can be manipulated with CSS.
 .TP 0.5i
 .B -k
 Process input resulting from a manpage keyword search
@@ -200,6 +206,21 @@ The
 argument specifies the width of the number of characters making
 up the left margin of the formatted nroff input.
 The default value is 0.
+.TP 0.5i
+.BI -leftside\0 file
+Man2html detects references to other manual pages by manpage name
+(a word, possibly with embedded \*(``\-\*('') in bold font,
+followed by a section number in parentheses.
+If the manpage name is split by nroff's hyphenation,
+man2html can be confused, because it cannot tell whether
+a \*(``\-\*('' at the end of the line is part of a manpage name,
+or just the hyphenation marker.
+.IP
+The \fB-leftside\fP option allows you to tell man2html
+about these special cases,
+using a file containing the left-side of hyphenated manpage names.
+If the option is not given,
+man2html uses a short fallback: "apt", "cvs", "git", "sccs' and "sysv".
 .TP 0.5i
 .B -nodepage
 By default,
@@ -262,6 +283,12 @@ does not generate a \s-1HTML\s+1 title
 .RB ( \s-1<TITLE>\s+1 ).
 This option sets the title of the \s-1HTML\s+1 output to the specified
 .IR string .
+.TP 0.5i
+.B -toc
+Generate IDs compatible with HTML::Toc,
+which is used to produce a separate table of contents file.
+The IDs embedded in \s-1HTML\s+1 header-tags,
+e.g., \*(``<h3>\*('' will have a \*(``\-toc\*('' suffix.
 .TP 0.5i
 .BI -topm\0 lines
 The
@@ -404,7 +431,7 @@ This value is used as the header tag of a section head if
 no matches are found in the \%\fB%SectionHead\fR map.
 .SS "Using Regular Expressions in the Map File"
 .LP
-You may have noticed unusual characters in the default map file, like
+You may have noticed unusual characters in the default map file, such as
 "\\s" or "*".
 The
 .B man2html
@@ -425,9 +452,9 @@ utility already anchors the regular expression to the beginning of the
 line with left margin spacing specified by the
 .B \%-leftm
 option.
-Therefore, do not use the `\fB\fR^' character to anchor your regular
+Therefore, do not use the \*(``\fB\fR^\*('' character to anchor your regular
 expression to the beginning.
-However, you may end your expression with a `\fB$\fR' to anchor it to
+However, you may end your expression with a \*(``\fB$\fR\*('' to anchor it to
 the end of the line.
 .LP 
 Since the
@@ -436,16 +463,16 @@ is actually a regular expression, you will have to be careful of
 special characters if you want them to be treated literally.
 Any of the characters
 .RB ` "[ ] ( ) . ^ { } $ * ? + \\ |" '
-should be escaped by prefixing them by the
-\&`\fB\\\fR' character if you want
+should be escaped by prefixing them by the \*(``\fB\\\fR\*('' character
+if you want
 .B perl
 to treat them "as is".
 .LP
 .I Caution:
 One should use single quotes instead of double quotes to delimit
 .BR "\%<section\ head\ text>" .
-This will preserve any `\fB\\\fR' characters for character escaping
-or when the `\fB\\\fR' is used for special
+This will preserve any \*(``\fB\\\fR\*('' characters for character escaping
+or when the \*(``\fB\\\fR\*('' is used for special
 .B perl
 character matching sequences (e.g.,  \fB\\s\fR, \fB\\w\fR, \fB\\S\fR).
 .SS "Other Tid-bits on the Map File"
@@ -560,7 +587,8 @@ is a more general form of the
 .B \%-cgiurl
 option.
 .B \%-cgiurlexp
-allows one to specify a general Perl expression.  For example:
+allows one to specify a general Perl expression.
+For example:
 .LP
 \fB$title=~/^db_/i?"$title.html":"/cgi-bin/man?$title+$section"\fR
 .LP
@@ -585,18 +613,12 @@ The
 .B man2html
 utility will generate an \s-1HTML\s+1 document of the keyword search input
 having the following format:
-.RS 4n 
-.LP
-.na
-'ti -2n
-'ta  2n
-\(bu	All manpage references are listed by section.
+.RS 2
+.b2
+All manpage references are listed by section.
 .ad
-.LP
-.na
-'ti -2n
-'ta  2n
-\(bu	Within each section listing, the manpage references
+.b2
+Within each section listing, the manpage references
 are sorted alphabetically (case-sensitive) in a
 .B \s-1<DL>\s+1
 tag.
@@ -606,11 +628,8 @@ section, and the summary text is listed in the
 .B \s-1<DD>\s+1
 section.
 .ad
-.LP
-.na
-'ti -2n
-'ta  2n
-\(bu	Each manpage reference listed is a hyperlink to the
+.b2
+Each manpage reference listed is a hyperlink to the
 actual manpage as specified by the
 .B \%-cgiurl
 option.
@@ -636,7 +655,7 @@ The
 utility tries it best to handle all the variations.
 However, the keyword search results generated by the
 .I Solaris
-operating system is different enough from other systems that a
+operating system are different enough from other systems that a
 special command-line option
 .RB ( -solaris )
 must be specified to handle its output.
@@ -679,9 +698,9 @@ Here is a list of recommended command-line options for certain systems:
 .fi
 .RE
 .LP
-Some line spacing gets lost in the formatted nroff since the
+Some line spacing is lost in the formatted nroff since the
 spacing would occur in the middle of a page break.
-This can cause text to be merged that shouldn't be merged when
+This can cause text to be merged that should not be merged when
 .B man2html
 depaginates the text.
 To avoid this problem,
@@ -737,19 +756,20 @@ option is in affect.
 .na
 This documentation describes
 .B man2html
-version 3.0.1
+version 3.1 (20220714)
 .SH "SEE ALSO"
 .na
 .BR man (1),
 .BR nroff (1),
 .BR perl (1)
 .LP
-.I http://www.oac.uci.edu/indiv/ehood/man2html.html
+.I 
+https://invisible-island.net/scripts/man2html.html
 .SH AUTHOR
 .LP
 .B Earl Hood
 .br
-.I ehood@medusa.acs.uci.edu
+.B Thomas E. Dickey
 .\"
 .SH "ERRORS AND OMISSIONS"
 .na
