@@ -2,26 +2,26 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##	$Id: man2html,v 1.30 2022/07/12 21:21:10 tom Exp $
+##      $Id: man2html,v 1.34 2023/03/19 08:57:55 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
-##	Thomas E. Dickey (for ncurses and other programs)
+##      Thomas E. Dickey (for ncurses and other programs)
 ##  Description:
 ##      man2html is a Perl program to convert formatted nroff output
-##	to HTML.
+##      to HTML.
 ##
-##	Recommend command-line options based on platform:
+##      Recommend command-line options based on platform:
 ##
-##	Platform		Options
-##	---------------------------------------------------------------------
-##	c2mp			<None, the defaults should be okay>
-##	hp9000s700/800		-leftm 1 -topm 8
-##	sun4			-sun
-##	---------------------------------------------------------------------
+##      Platform                Options
+##      ---------------------------------------------------------------------
+##      c2mp                    <None, the defaults should be okay>
+##      hp9000s700/800          -leftm 1 -topm 8
+##      sun4                    -sun
+##      ---------------------------------------------------------------------
 ##
 ##---------------------------------------------------------------------------##
-##  Copyright 2001-2021,2022	Thomas E. Dickey
-##  Copyright (C) 1995-1997	Earl Hood, ehood@medusa.acs.uci.edu
+##  Copyright 2001-2022,2023    Thomas E. Dickey
+##  Copyright (C) 1995-1997     Earl Hood, ehood@medusa.acs.uci.edu
 ##
 ##  This program is free software; you can redistribute it and/or modify
 ##  it under the terms of the GNU General Public License as published by
@@ -62,12 +62,12 @@ our $OutFH = \*STDOUT;
 our $bs;    # appease "use strict"
 *bs = \"\b";    # ...but set all/any "bs" variables
 
-##	Hash of section titles and their HTML tag wrapper.
-##	This list allows customization of what HTML tag is used for
-##	a given section head.
+##      Hash of section titles and their HTML tag wrapper.
+##      This list allows customization of what HTML tag is used for
+##      a given section head.
 ##
-##	The section title can be a regular expression.  Therefore, one must
-##	be careful about quoting special characters.
+##      The section title can be a regular expression.  Therefore, one must
+##      be careful about quoting special characters.
 ##
 our %SectionHead = (
 
@@ -146,7 +146,7 @@ our (
 );
 
 #############################################################################
-##	Subroutines
+##      Subroutines
 #############################################################################
 
 sub index_name($) {
@@ -170,9 +170,9 @@ sub index_name($) {
 
 sub do_it() {
 
-    ##	Define while loop and then evaluate it when used.  The reason
-    ##	is to avoid the regular expression reevaluation in the
-    ##	section head detection code.
+    ##  Define while loop and then evaluate it when used.  The reason
+    ##  is to avoid the regular expression reevaluation in the
+    ##  section head detection code.
 
     my $doitcode = <<'EndOfDoItCode';
 
@@ -181,83 +181,90 @@ sub do_it() {
     $see_also = !$SeeAlso;
     $newc = "";
     LOOP: while(!eof($InFH)) {
-	$blank = 0;
-	for ($i=0; $i < $hdsz; $i++) {
-	    last LOOP  unless defined($_ = <$InFH>);
-	}
-	for ($i=0; $i < $txsz; $i++) {
-	    last LOOP  unless defined($_ = <$InFH>);
+        $blank = 0;
+        for ($i=0; $i < $hdsz; $i++) {
+            last LOOP  unless defined($_ = <$InFH>);
+        }
+        for ($i=0; $i < $txsz; $i++) {
+            last LOOP  unless defined($_ = <$InFH>);
 
-	    ## Check if compress consecutive blank lines
-	    if ($Compress and !/\S/) {
-		if ($blank) { next; } else { $blank = 1; }
-	    } else {
-		$blank = 0;
-	    }
+            ## Check if compress consecutive blank lines
+            if ($Compress and !/\S/) {
+                if ($blank) { next; } else { $blank = 1; }
+            } else {
+                $blank = 0;
+            }
 
-	    ## Try to check if line space is needed at page boundaries ##
-	    if (!$NoDepage && ($i==0 || $i==($txsz-1)) && !/^\s*$/) {
-		/^(\s*)/;  $tmp = length($1);
-		if ($do) {
-		    if ($tmp < $preindent) { print $OutFH "\n"; }
-		} else {
-		    $do = 1;
-		}
-		$preindent = $tmp;
-	    } else {
-		$do = 0;  $preindent = 0;
-	    }
+            ## Try to check if line space is needed at page boundaries ##
+            if (!$NoDepage && ($i==0 || $i==($txsz-1)) && !/^\s*$/) {
+                /^(\s*)/;  $tmp = length($1);
+                if ($do) {
+                    if ($tmp < $preindent) { print $OutFH "\n"; }
+                } else {
+                    $do = 1;
+                }
+                $preindent = $tmp;
+            } else {
+                $do = 0;  $preindent = 0;
+            }
 
-	    ## Interpret line
-	    $line = $_;
-	    $oldc = $newc;
-	    $newc = entitize(\$_);	# Convert [$<>] to entity references
+            ## Interpret line
+            $line = $_;
+            $oldc = $newc;
+            $newc = entitize(\$_);      # Convert [$<>] to entity references
 
-	    ## Check for 'SEE ALSO' link only
-	    if (!$see_also && $CgiUrl && $SeeAlso) {
-		($tmp = $line) =~ s/.\010//go;
-		if ($tmp =~ /^\s*SEE\s+ALSO\s*$/o) { $see_also = 1; }
-		else { $see_also = 0; }
-	    }
+            ## Check for 'SEE ALSO' link only
+            if (!$see_also && $CgiUrl && $SeeAlso) {
+                ($tmp = $line) =~ s/.\010//go;
+                if ($tmp =~ /^\s*SEE\s+ALSO\s*$/o) { $see_also = 1; }
+                else { $see_also = 0; }
+            }
 
-	    ## Create anchor links for manpage references
-	    s/((((.\010)+)?[\+_\.\w-])+\(((.\010)+)?
-	      \d((.\010)+)?\w*\))
-	     /make_xref($1)
-	     /geox  if $see_also;
+            ## Create anchor links for manpage references
+            if ( $see_also ) {
+                if ( $oldc ne "" and $Title =~ /refresh/ ) {
+                    $oldc = "" unless 
+                                /^\s+((((.\010)+)?[\+_\.\w-])+\(((.\010)+)?
+                                  \d((.\010)+)?\w*\))/;
+                }
+                s/((((.\010)+)?[\+_\.\w-])+\(((.\010)+)?
+                  \d((.\010)+)?\w*\))
+                 /make_xref($1)
+                 /geox;
+            }
 
-	    ## Emphasize underlined words
-	    # s/((_\010[^_])+[\.\(\)_]?(_\010[^_])+\)?)/emphasize($1)/oge;
-	    # s/((_\010[^_])+([\.\(\)_]?(_\010[^_])+)?)/emphasize($1)/oge;
-	    #
-	    # The previous expressions were trying to be clever about
-	    # detecting underlined text which contain non-alphanumeric
-	    # characters.  nroff will not underline non-alphanumeric
-	    # characters in an underlined phrase, and the above was trying
-	    # to detect that.  It does not work all the time, and it
-	    # screws up other text, so a simplified expression is used.
+            ## Emphasize underlined words
+            # s/((_\010[^_])+[\.\(\)_]?(_\010[^_])+\)?)/emphasize($1)/oge;
+            # s/((_\010[^_])+([\.\(\)_]?(_\010[^_])+)?)/emphasize($1)/oge;
+            #
+            # The previous expressions were trying to be clever about
+            # detecting underlined text which contain non-alphanumeric
+            # characters.  nroff will not underline non-alphanumeric
+            # characters in an underlined phrase, and the above was trying
+            # to detect that.  It does not work all the time, and it
+            # screws up other text, so a simplified expression is used.
 
-	    s/((_\010[^_])+)/emphasize($1)/oge;
+            s/((_\010[^_])+)/emphasize($1)/oge;
 
-	    $secth = 0;
-	    ## Check for strong text and headings
-	    if ($Sun || /.\010./o) {
-		my $foo = $line;
-		$foo =~ s/.\010//go;
-		if (!$NoHeads and
-		    /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})
-		      ((((.\010.)|[[:punct:]])
-		        ((.\010.)|[[:punct:][:space:]])+
-		        ((.\010.)|[[:punct:]]))|
-		       ((.\010.){2,}))
-		      [\r\n]+$/ox ) {
-		    $line =~ s/.\010//go;
-		    $secth = 1;
-		    if ( $ssecm ne "" and /^$leftm$ssecm.*$/ ) {
-		        $tmp = $SSecFallback;
-		    } else {
-		        $tmp = $HeadFallback;
-		    }
+            $secth = 0;
+            ## Check for strong text and headings
+            if ($Sun || /.\010./o) {
+                my $foo = $line;
+                $foo =~ s/.\010//go;
+                if (!$NoHeads and
+                    /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})
+                      ((((.\010.)|[[:punct:]])
+                        ((.\010.)|[[:punct:][:space:]])+
+                        ((.\010.)|[[:punct:]]))|
+                       ((.\010.){2,}))
+                      [\r\n]+$/ox ) {
+                    $line =~ s/.\010//go;
+                    $secth = 1;
+                    if ( $ssecm ne "" and /^$leftm$ssecm.*$/ ) {
+                        $tmp = $SSecFallback;
+                    } else {
+                        $tmp = $HeadFallback;
+                    }
 EndOfDoItCode
 
     ##  Create switch statement for detecting a heading
@@ -274,35 +281,35 @@ EndOfDoItCode
     ##  Rest of routine
     ##
     $doitcode .= <<'EndOfDoItCode';
-		    if ($secth) {
-			chop $line;
-			$line =~ s/^\s+//;
-			$_ = $tmp . $line . $tmp;
-			s%<([^>]*)>$%</$1>%;
-			if ( $opt_index ) {
-			    $_ = &index_name($_);
-			    $index[$#index + 1] = $_;
-			}
-			$_ = "</PRE>" . $_ . "<PRE>";
-			$_ = "\n" . $_ . "\n" unless ( $Compress );
-		    } else {
-			s/(((.\010)+.)+)/strongize($1)/oge;
-		    }
-		} else {
-		    $line =~ s/.\010//go;
-		    s/(((.\010)+.)+)/strongize($1)/oge;
-		}
-	    }
-	    print $OutFH $_;
-	}
+                    if ($secth) {
+                        chop $line;
+                        $line =~ s/^\s+//;
+                        $_ = $tmp . $line . $tmp;
+                        s%<([^>]*)>$%</$1>%;
+                        if ( $opt_index ) {
+                            $_ = &index_name($_);
+                            $index[$#index + 1] = $_;
+                        }
+                        $_ = "</PRE>" . $_ . "<PRE>";
+                        $_ = "\n" . $_ . "\n" unless ( $Compress );
+                    } else {
+                        s/(((.\010)+.)+)/strongize($1)/oge;
+                    }
+                } else {
+                    $line =~ s/.\010//go;
+                    s/(((.\010)+.)+)/strongize($1)/oge;
+                }
+            }
+            print $OutFH $_;
+        }
 
-	for ($i=0; $i < $ftsz; $i++) {
-	    last LOOP  unless defined($_ = <$InFH>);
-	}
+        for ($i=0; $i < $ftsz; $i++) {
+            last LOOP  unless defined($_ = <$InFH>);
+        }
     }
 EndOfDoItCode
 
-    ##	Perform processing.
+    ##  Perform processing.
 
     printhead() unless $Bare;
     print $OutFH "<PRE>\n";
@@ -354,7 +361,7 @@ sub get_cli_opts() {
         $hdsz = $opt_topm if defined($opt_topm);
         $ftsz = $opt_botm if defined($opt_botm);
     }
-    $txsz = $pgsz - ( $hdsz + $ftsz );
+    $txsz    = $pgsz - ( $hdsz + $ftsz );
     $leftmsz = $opt_leftm if defined($opt_leftm);
     $leftm   = ' ' x $leftmsz;
     $ssecmsz = $opt_ssecm if defined($opt_ssecm);
@@ -389,7 +396,7 @@ sub get_cli_opts() {
                 next if ( $data[$n] =~ /^\s*#/ );
                 my $key   = $data[$n];
                 my $value = $key;
-                $key =~ s/\s.*//;
+                $key   =~ s/\s.*//;
                 $value =~ s/^[^[:blank:]]+\s+//;
                 $Aliases{$key} = $value;
             }
@@ -569,7 +576,7 @@ sub entitize($) {
 }
 
 ##---------------------------------------------------------------------------
-##	escape special characters in a string, in-place
+##      escape special characters in a string, in-place
 ##
 sub htmlize($) {
     my ($str) = shift;
@@ -580,7 +587,7 @@ sub htmlize($) {
 }
 
 ##---------------------------------------------------------------------------
-##	htmlize2() is used by entitize.
+##      htmlize2() is used by entitize.
 ##
 sub htmlize2($) {
     my ($str) = shift;
@@ -591,10 +598,10 @@ sub htmlize2($) {
 }
 
 ##---------------------------------------------------------------------------
-##	strike converts HTML special characters in overstruck text
-##	into entity references.  The entities are overstruck so
-##	strongize() and emphasize() will recognize the entity to be
-##	wrapped in tags.
+##      strike converts HTML special characters in overstruck text
+##      into entity references.  The entities are overstruck so
+##      strongize() and emphasize() will recognize the entity to be
+##      wrapped in tags.
 ##
 sub strike($$) {
     my ( $w, $char ) = @_;
@@ -631,7 +638,7 @@ sub strike($$) {
 }
 
 ##---------------------------------------------------------------------------
-##	make_xref() converts a manpage cross-reference into a hyperlink.
+##      make_xref() converts a manpage cross-reference into a hyperlink.
 ##
 sub make_xref($) {
     my $str = shift;
@@ -652,7 +659,12 @@ sub make_xref($) {
         $title =~ s/\+/%2B/g;
         my ($href) = ( eval $CgiUrl );
         if ( $fix ne "" ) {
-            $href =~ s%^(.*/)?(.*)$%$1$fix$2%;
+            if ( $href =~ /^.*\/.*$/ ) {
+                $href =~ s%^(.*/)?(.*)$%$1$fix$2%;
+            }
+            else {
+                $href = $fix . $href;
+            }
         }
         qq|<B><A HREF="$href">$str</A></B>|;
     }
@@ -663,12 +675,12 @@ sub make_xref($) {
 }
 
 ##---------------------------------------------------------------------------
-##	man_k() process a keyword search.  The problem we have is there
-##	is no standard for keyword search results from man.  Solaris
-##	systems have a different enough format to warrant dealing
-##	with it as a special case.  For other cases, we try our best.
-##	Unfortunately, there are some lines of results that may be
-##	skipped.
+##      man_k() process a keyword search.  The problem we have is there
+##      is no standard for keyword search results from man.  Solaris
+##      systems have a different enough format to warrant dealing
+##      with it as a special case.  For other cases, we try our best.
+##      Unfortunately, there are some lines of results that may be
+##      skipped.
 ##
 sub man_k() {
     my (
@@ -758,7 +770,7 @@ sub man_k() {
     printtail() unless $Bare;
 }
 ##---------------------------------------------------------------------------
-##	print_mank_sec() prints out manpage cross-refs of a specific section.
+##      print_mank_sec() prints out manpage cross-refs of a specific section.
 ##
 sub print_mank_sec($$$$) {
     my ( $sec, $sect, $secsub, $secsec ) = @_;
@@ -770,8 +782,8 @@ sub print_mank_sec($$$$) {
     if ( $#array >= 0 ) {
         print $OutFH "<H2>Section $section</H2>\n", "<DL COMPACT>\n";
         foreach $item (@array) {
-            @refs = split( /,/, $item );
-            $section = $secsec->{$item} if $sect eq 'N';
+            @refs       = split( /,/, $item );
+            $section    = $secsec->{$item} if $sect eq 'N';
             $subsection = $secsub->{$item};
             if ($CgiUrl) {
                 ( $title = $refs[0] ) =~ s/\(\)//g;   # watch out for extra ()'s
@@ -836,7 +848,7 @@ Description:
 
 Version:
   $VERSION
-  Copyright 2001-2021,2022 Thomas E. Dickey
+  Copyright 2001-2022,2023 Thomas E. Dickey
   Copyright (C) 1995-1997  Earl Hood, ehood\@medusa.acs.uci.edu
   $PROG comes with ABSOLUTELY NO WARRANTY and $PROG may be copied only
   under the terms of the GNU General Public License, which may be found in
@@ -847,7 +859,7 @@ EndOfUsage
 }
 
 #############################################################################
-##	Main Block
+##      Main Block
 #############################################################################
 {
     if ( get_cli_opts() ) {
@@ -862,3 +874,5 @@ EndOfUsage
         &usage;
     }
 }
+
+# vile: notabinsert sw=4

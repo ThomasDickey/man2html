@@ -1,6 +1,17 @@
-CHANGES for man2html: 2022-07-14 19:36:06
+CHANGES for man2html: 2023-03-19 04:57:55
 
 MM/DD/YYYY
+===========================================================================
+2023-03-19
+	o convert remaining tabs to spaces (perl tidy already did most).
+
+	o reset variable used to splice links which are broken by hyphenation,
+	  if the bold text happens to not match the see-also pattern.  This
+	  occurred with ncurses curs_refresh.3x.html file.
+
+	o fix a case where optional pattern in substitution did not match,
+	  causing an uninitialized-variable warning.
+
 ===========================================================================
 2022-07-14
 
