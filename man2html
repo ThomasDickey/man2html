@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##      $Id: man2html,v 1.34 2023/03/19 08:57:55 tom Exp $
+##      $Id: man2html,v 1.35 2023/12/03 00:01:20 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##      Thomas E. Dickey (for ncurses and other programs)
@@ -223,7 +223,7 @@ sub do_it() {
             ## Create anchor links for manpage references
             if ( $see_also ) {
                 if ( $oldc ne "" and $Title =~ /refresh/ ) {
-                    $oldc = "" unless 
+                    $oldc = "" unless
                                 /^\s+((((.\010)+)?[\+_\.\w-])+\(((.\010)+)?
                                   \d((.\010)+)?\w*\))/;
                 }
@@ -244,13 +244,12 @@ sub do_it() {
             # to detect that.  It does not work all the time, and it
             # screws up other text, so a simplified expression is used.
 
-            s/((_\010[^_])+)/emphasize($1)/oge;
+            s/((_\010[^_])+)/emphasize($1)/oge unless
+                    ( /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})_/ );
 
             $secth = 0;
             ## Check for strong text and headings
             if ($Sun || /.\010./o) {
-                my $foo = $line;
-                $foo =~ s/.\010//go;
                 if (!$NoHeads and
                     /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})
                       ((((.\010.)|[[:punct:]])
@@ -258,8 +257,12 @@ sub do_it() {
                         ((.\010.)|[[:punct:]]))|
                        ((.\010.){2,}))
                       [\r\n]+$/ox ) {
+                    if ( /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})_/ ) {
+                        $secth = 2;
+                    } else {
+                        $secth = 1;
+                    }
                     $line =~ s/.\010//go;
-                    $secth = 1;
                     if ( $ssecm ne "" and /^$leftm$ssecm.*$/ ) {
                         $tmp = $SSecFallback;
                     } else {
@@ -289,6 +292,9 @@ EndOfDoItCode
                         if ( $opt_index ) {
                             $_ = &index_name($_);
                             $index[$#index + 1] = $_;
+                        }
+                        if ( $secth == 2 ) {
+                            $_ =~ s%^(\<[^>]+\>)(\<[^>]+\>)([^<>[:space:]]+)%$1$2<$UTag>$3</$UTag>%;
                         }
                         $_ = "</PRE>" . $_ . "<PRE>";
                         $_ = "\n" . $_ . "\n" unless ( $Compress );

@@ -2,6 +2,12 @@ CHANGES for man2html: 2023-03-19 04:57:55
 
 MM/DD/YYYY
 ===========================================================================
+2023-12-02
+	o provide a special case for ncurses's main manpage, which now uses
+	  italics for the subsections defining environment variables, rather
+	  than bold.
+
+===========================================================================
 2023-03-19
 	o convert remaining tabs to spaces (perl tidy already did most).
 
