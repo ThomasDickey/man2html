@@ -2,6 +2,10 @@ CHANGES for man2html: 2023-03-19 04:57:55
 
 MM/DD/YYYY
 ===========================================================================
+2023-12-17
+	o allow a special case of bold italics (used in captoinfo.1m in ncurses)
+
+===========================================================================
 2023-12-02
 	o provide a special case for ncurses's main manpage, which now uses
 	  italics for the subsections defining environment variables, rather

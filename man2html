@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##      $Id: man2html,v 1.35 2023/12/03 00:01:20 tom Exp $
+##      $Id: man2html,v 1.36 2023/12/17 19:20:14 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##      Thomas E. Dickey (for ncurses and other programs)
@@ -244,8 +244,11 @@ sub do_it() {
             # to detect that.  It does not work all the time, and it
             # screws up other text, so a simplified expression is used.
 
-            s/((_\010[^_])+)/emphasize($1)/oge unless
-                    ( /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})_/ );
+            if ( /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})_/ ) {
+            } else {
+                s/((_(\010([^_])){2})+)/overemphasize($1)/oge;
+                s/((_\010[^_])+)/emphasize($1)/oge;
+            }
 
             $secth = 0;
             ## Check for strong text and headings
@@ -529,6 +532,14 @@ sub emphasize($) {
     my ($txt) = shift;
     $txt =~ s/.\010//go;
     $txt = "<$UTag>$txt</$UTag>";
+    $txt;
+}
+
+##---------------------------------------------------------------------------
+sub overemphasize($) {
+    my ($txt) = shift;
+    $txt =~ s/.\010//go;
+    $txt = "<$BTag><$UTag>$txt</$UTag></$BTag>";
     $txt;
 }
 
