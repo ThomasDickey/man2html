@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##      $Id: man2html,v 1.36 2023/12/17 19:20:14 tom Exp $
+##      $Id: man2html,v 1.37 2024/01/06 01:11:41 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##      Thomas E. Dickey (for ncurses and other programs)
@@ -140,9 +140,10 @@ our (
     $opt_aliases, $opt_bare,      $opt_belem,    $opt_botm,
     $opt_cgiurl,  $opt_cgiurlexp, $opt_compress, $opt_externs,
     $opt_headmap, $opt_help,      $opt_index,    $opt_k,
-    $opt_leftm,   $opt_nodepage,  $opt_noheads,  $opt_pgsize,
-    $opt_seealso, $opt_ssecm,     $opt_solaris,  $opt_sun,
-    $opt_title,   $opt_toc,       $opt_topm,     $opt_uelem
+    $opt_leftm,   $opt_mixsecs,   $opt_nodepage, $opt_noheads,
+    $opt_pgsize,  $opt_seealso,   $opt_ssecm,    $opt_solaris,
+    $opt_sun,     $opt_title,     $opt_toc,      $opt_topm,
+    $opt_uelem
 );
 
 #############################################################################
@@ -244,9 +245,12 @@ sub do_it() {
             # to detect that.  It does not work all the time, and it
             # screws up other text, so a simplified expression is used.
 
-            if ( /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})_/ ) {
+            if ( defined($opt_mixsecs) ) {
+                unless ( /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})_/ ) {
+                    s/((_(\010([^_])){2})+)/overemphasize($1)/oge;
+                    s/((_\010[^_])+)/emphasize($1)/oge;
+                }
             } else {
-                s/((_(\010([^_])){2})+)/overemphasize($1)/oge;
                 s/((_\010[^_])+)/emphasize($1)/oge;
             }
 
@@ -260,8 +264,12 @@ sub do_it() {
                         ((.\010.)|[[:punct:]]))|
                        ((.\010.){2,}))
                       [\r\n]+$/ox ) {
-                    if ( /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})_/ ) {
-                        $secth = 2;
+                    if ( defined($opt_mixsecs) ) {
+                        if ( /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})_/ ) {
+                            $secth = 2;
+                        } else {
+                            $secth = 1;
+                        }
                     } else {
                         $secth = 1;
                     }
@@ -345,6 +353,7 @@ sub get_cli_opts() {
         "k",              # Process input from 'man -k' output.
         "leftm=i",        # Character width of left margin (def: 0)
         "leftside=s",     # Filename of left-sides for hyphenated names
+        "mixsecs",        # Italics+Bold in section/subsection titles
         "nodepage",       # Do not remove pagination lines
         "noheads",        # Do not detect for section heads
         "pgsize=i",       # Number of lines in a page (def: 66)
