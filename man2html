@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##      $Id: man2html,v 1.37 2024/01/06 01:11:41 tom Exp $
+##      $Id: man2html,v 1.41 2025/10/05 17:08:33 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##      Thomas E. Dickey (for ncurses and other programs)
@@ -20,7 +20,7 @@
 ##      ---------------------------------------------------------------------
 ##
 ##---------------------------------------------------------------------------##
-##  Copyright 2001-2022,2023    Thomas E. Dickey
+##  Copyright 2001-2023,2025    Thomas E. Dickey
 ##  Copyright (C) 1995-1997     Earl Hood, ehood@medusa.acs.uci.edu
 ##
 ##  This program is free software; you can redistribute it and/or modify
@@ -59,7 +59,7 @@ our $InFH  = \*STDIN;
 our $OutFH = \*STDOUT;
 
 ## Backspace character:  Used in overstriking detection
-our $bs;    # appease "use strict"
+our $bs;        # appease "use strict"
 *bs = \"\b";    # ...but set all/any "bs" variables
 
 ##      Hash of section titles and their HTML tag wrapper.
@@ -140,10 +140,10 @@ our (
     $opt_aliases, $opt_bare,      $opt_belem,    $opt_botm,
     $opt_cgiurl,  $opt_cgiurlexp, $opt_compress, $opt_externs,
     $opt_headmap, $opt_help,      $opt_index,    $opt_k,
-    $opt_leftm,   $opt_mixsecs,   $opt_nodepage, $opt_noheads,
-    $opt_pgsize,  $opt_seealso,   $opt_ssecm,    $opt_solaris,
-    $opt_sun,     $opt_title,     $opt_toc,      $opt_topm,
-    $opt_uelem
+    $opt_leftm,   $opt_leftside,  $opt_mixsecs,  $opt_nodepage,
+    $opt_noheads, $opt_pgsize,    $opt_seealso,  $opt_ssecm,
+    $opt_solaris, $opt_sun,       $opt_title,    $opt_toc,
+    $opt_topm,    $opt_uelem
 );
 
 #############################################################################
@@ -259,9 +259,9 @@ sub do_it() {
             if ($Sun || /.\010./o) {
                 if (!$NoHeads and
                     /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})
-                      ((((.\010.)|[[:punct:]])
-                        ((.\010.)|[[:punct:][:space:]])+
-                        ((.\010.)|[[:punct:]]))|
+                      ((((.\010.)|(.\010.\010.)|[[:punct:]])
+                        ((.\010.)|(.\010.\010.)|[[:punct:][:space:]])+
+                        ((.\010.)|(.\010.\010.)|[[:punct:]]))|
                        ((.\010.){2,}))
                       [\r\n]+$/ox ) {
                     if ( defined($opt_mixsecs) ) {
@@ -732,13 +732,13 @@ sub man_k() {
             #  <topic> <manpage>
         }
         else {
-            $refs =~ s/\s(and|or)\s/,/gi;      # Convert and/or to commas
-            $refs =~ s/^[^:\s]:\s*//;          # Remove prefixed whatis path
+            $refs =~ s/\s(and|or)\s/,/gi;    # Convert and/or to commas
+            $refs =~ s/^[^:\s]:\s*//;        # Remove prefixed whatis path
         }
-        $refs =~ s/\s//g;                      # Remove all whitespace
-        $refs =~ s/,/, /g;                     # Put space after comma
-        htmlize( \$desc );                     # Check for special chars in desc
-        $desc =~ s/^(.)/\U$1/;                 # Uppercase first letter in desc
+        $refs =~ s/\s//g;                    # Remove all whitespace
+        $refs =~ s/,/, /g;                   # Put space after comma
+        htmlize( \$desc );                   # Check for special chars in desc
+        $desc =~ s/^(.)/\U$1/;               # Uppercase first letter in desc
 
         if ( $section eq '1' ) {
             $Sec1{$refs}    = $desc;
@@ -874,7 +874,7 @@ Description:
 
 Version:
   $VERSION
-  Copyright 2001-2022,2023 Thomas E. Dickey
+  Copyright 2001-2023,2025 Thomas E. Dickey
   Copyright (C) 1995-1997  Earl Hood, ehood\@medusa.acs.uci.edu
   $PROG comes with ABSOLUTELY NO WARRANTY and $PROG may be copied only
   under the terms of the GNU General Public License, which may be found in

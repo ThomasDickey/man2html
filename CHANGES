@@ -2,8 +2,13 @@ CHANGES for man2html: 2024-01-05 20:11:41
 
 MM/DD/YYYY
 ===========================================================================
+2025-10-05
+	o workaround for groff 1.23.0, which uses double-overstrike for
+	  subsection ".SS"
+
+===========================================================================
 2024-01-05
-	* change the special case of bold italics to "-mixsecs" option.
+	o change the special case of bold italics to "-mixsecs" option.
 
 ===========================================================================
 2023-12-17
