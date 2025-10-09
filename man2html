@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##      $Id: man2html,v 1.41 2025/10/05 17:08:33 tom Exp $
+##      $Id: man2html,v 1.42 2025/10/09 22:49:10 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##      Thomas E. Dickey (for ncurses and other programs)
@@ -235,15 +235,14 @@ sub do_it() {
             }
 
             ## Emphasize underlined words
-            # s/((_\010[^_])+[\.\(\)_]?(_\010[^_])+\)?)/emphasize($1)/oge;
-            # s/((_\010[^_])+([\.\(\)_]?(_\010[^_])+)?)/emphasize($1)/oge;
-            #
-            # The previous expressions were trying to be clever about
-            # detecting underlined text which contain non-alphanumeric
-            # characters.  nroff will not underline non-alphanumeric
-            # characters in an underlined phrase, and the above was trying
-            # to detect that.  It does not work all the time, and it
-            # screws up other text, so a simplified expression is used.
+
+            my $FullyEmphasized =
+                    /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})
+                      ((((.\010.)|(.\010.\010.)|[[:punct:]])
+                        ((.\010.)|(.\010.\010.)|[[:punct:][:space:]])+
+                        ((.\010.)|(.\010.\010.)|[[:punct:]]))|
+                       ((.\010.){2,}))
+                      [\r\n]+$/ox;
 
             if ( defined($opt_mixsecs) ) {
                 unless ( /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})_/ ) {
@@ -257,13 +256,7 @@ sub do_it() {
             $secth = 0;
             ## Check for strong text and headings
             if ($Sun || /.\010./o) {
-                if (!$NoHeads and
-                    /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})
-                      ((((.\010.)|(.\010.\010.)|[[:punct:]])
-                        ((.\010.)|(.\010.\010.)|[[:punct:][:space:]])+
-                        ((.\010.)|(.\010.\010.)|[[:punct:]]))|
-                       ((.\010.){2,}))
-                      [\r\n]+$/ox ) {
+                if (!$NoHeads and $FullyEmphasized ) {
                     if ( defined($opt_mixsecs) ) {
                         if ( /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})_/ ) {
                             $secth = 2;
