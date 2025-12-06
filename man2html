@@ -2,7 +2,7 @@
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) man2html 1.2 97/08/12 12:57:30 @(#)
-##      $Id: man2html,v 1.42 2025/10/09 22:49:10 tom Exp $
+##      $Id: man2html,v 1.43 2025/12/06 19:00:57 tom Exp $
 ##  Authors:
 ##      Earl Hood, ehood@medusa.acs.uci.edu
 ##      Thomas E. Dickey (for ncurses and other programs)
@@ -236,6 +236,7 @@ sub do_it() {
 
             ## Emphasize underlined words
 
+            my $MixedEmphasis = 0;
             my $FullyEmphasized =
                     /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})
                       ((((.\010.)|(.\010.\010.)|[[:punct:]])
@@ -243,6 +244,13 @@ sub do_it() {
                         ((.\010.)|(.\010.\010.)|[[:punct:]]))|
                        ((.\010.){2,}))
                       [\r\n]+$/ox;
+            if ( $FullyEmphasized ) {
+                my $check = $_;
+                $check =~ s/\+\010[[:alnum:]]/o/gox; # e.g., "bullet"
+                $check =~ s/.(\010.)+//gox;
+                $check =~ s/[[:punct:][:space:]]//gox;
+                $MixedEmphasis = 1 if ( $check eq "" );
+            }
 
             if ( defined($opt_mixsecs) ) {
                 unless ( /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})_/ ) {
@@ -256,7 +264,15 @@ sub do_it() {
             $secth = 0;
             ## Check for strong text and headings
             if ($Sun || /.\010./o) {
-                if (!$NoHeads and $FullyEmphasized ) {
+                if (!$NoHeads and
+                    ( $FullyEmphasized and $MixedEmphasis ) or
+                    ( $MixedEmphasis == 0 and
+                      /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})
+                        ((((.\010.)|(.\010.\010.)|[[:punct:]])
+                         ((.\010.)|(.\010.\010.)|[[:punct:][:space:]])+
+                          ((.\010.)|(.\010.\010.)|[[:punct:]]))|
+                         ((.\010.){2,}))
+                        [\r\n]+$/ox ) ) {
                     if ( defined($opt_mixsecs) ) {
                         if ( /^([ ]{$leftmsz,$leftmsz}|[ ]{$sec_sz,$sec_sz})_/ ) {
                             $secth = 2;

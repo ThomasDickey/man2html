@@ -2,6 +2,12 @@ CHANGES for man2html: 2024-01-05 20:11:41
 
 MM/DD/YYYY
 ===========================================================================
+2025-12-06
+	o amend the last change to work with xterm's ctlseqs.ms, which has
+	  bullets formed like "+\bo" on otherwise fully-emphasized lines not
+	  intended to be section titles.
+
+===========================================================================
 2025-10-05
 	o workaround for groff 1.23.0, which uses double-overstrike for
 	  subsection ".SS"
